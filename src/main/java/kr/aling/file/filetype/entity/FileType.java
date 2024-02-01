@@ -22,10 +22,11 @@ import lombok.NoArgsConstructor;
 @Table(name = "file_type")
 public class FileType {
 
-    @Column(name = "file_type_name")
-    public String typeName;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "file_type_no")
     private Integer fileTypeNo;
+
+    @Column(name = "file_type_name")
+    public String typeName;
 }
