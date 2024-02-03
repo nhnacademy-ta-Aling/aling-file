@@ -1,4 +1,4 @@
-package kr.aling.file.filetype.entity;
+package kr.aling.file.filecategory.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * FileType Entity.
+ * FileCategory Entity.
  *
  * @author 박경서
  * @since 1.0
@@ -19,14 +19,23 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "file_type")
-public class FileType {
+@Table(name = "file_category")
+public class FileCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "file_type_no")
-    private Integer fileTypeNo;
+    @Column(name = "file_category_no")
+    private Integer fileCategoryNo;
 
-    @Column(name = "file_type_name")
-    public String typeName;
+    @Column(name = "file_category_name")
+    public String name;
+
+    /**
+     * FileCategory 생성자.
+     *
+     * @param name Category 이름
+     */
+    public FileCategory(String name) {
+        this.name = name;
+    }
 }
