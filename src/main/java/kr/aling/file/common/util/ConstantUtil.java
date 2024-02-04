@@ -10,6 +10,7 @@ public class ConstantUtil {
 
     public static final String X_FILE_SAVE_LOCATION = "X-File-Save-Location";
     public static final String X_FILE_CATEGORY = "X-File-Category";
+    public static final String X_AUTH_TOKEN = "X-Auth-Token";
 
     /**
      * Util 기본 생성자.

@@ -25,7 +25,7 @@ public class FileCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "file_category_no")
-    private Integer fileCategoryNo;
+    private Integer categoryNo;
 
     @Column(name = "file_category_name")
     public String name;

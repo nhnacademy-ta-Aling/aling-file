@@ -35,7 +35,7 @@ class FileRepositoryTest {
 
         // then
         assertThat(save).isNotNull();
-        assertThat(save.getFileCategory().getFileCategoryNo()).isEqualTo(fileCategory.getFileCategoryNo());
+        assertThat(save.getFileCategory().getCategoryNo()).isEqualTo(fileCategory.getCategoryNo());
         assertThat(save.getFileCategory().getName()).isEqualTo(fileCategory.getName());
         assertThat(save.getPath()).isEqualTo(fileDummy.getPath());
         assertThat(save.getOriginName()).isEqualTo(fileDummy.getOriginName());

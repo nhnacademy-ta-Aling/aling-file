@@ -81,7 +81,6 @@ class LocalFileServiceTest {
         // when
 
         when(fileCategoryRepository.findById(anyInt())).thenReturn(Optional.of(mock(FileCategory.class)));
-        when(fileRepository.save(any(AlingFile.class))).thenReturn(mock(AlingFile.class));
 
         // then
         localFileService.saveFile(request, 1);
