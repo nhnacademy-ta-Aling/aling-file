@@ -8,10 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
+import kr.aling.file.common.dto.FileInfoDto;
+import kr.aling.file.common.util.FileInfoUtil;
 import kr.aling.file.file.entity.AlingFile;
 import kr.aling.file.file.exception.FileSaveException;
 import kr.aling.file.file.repository.AlingFileRepository;
@@ -62,10 +63,8 @@ public class LocalFileServiceImpl implements FileService {
 
         try {
             for (Part part : request.getParts()) {
-                String originFileName = part.getSubmittedFileName();
-                String extension = originFileName.substring(originFileName.lastIndexOf("."));
-                String saveFileName = UUID.randomUUID() + extension;
-                String path = ROOT_PATH + saveFileName;
+                FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(part);
+                String path = ROOT_PATH + fileInfoDto.getSaveFileName();
 
                 try (InputStream is = part.getInputStream(); OutputStream os = new FileOutputStream(path)) {
 
@@ -80,8 +79,8 @@ public class LocalFileServiceImpl implements FileService {
                 AlingFile file = AlingFile.builder()
                         .fileCategory(fileCategory)
                         .path(path)
-                        .originName(originFileName)
-                        .saveName(saveFileName)
+                        .originName(fileInfoDto.getOriginFileName())
+                        .saveName(fileInfoDto.getSaveFileName())
                         .size(calculateFileSize(part.getSize()))
                         .createAt(LocalDateTime.now())
                         .build();
