@@ -43,8 +43,21 @@ public class LoggingAspect {
     public void doResponseLogging(ResponseEntity<?> result) {
         HttpServletRequest request = getHttpServletRequest();
 
-        String uri = request.getRequestURI();
-        log.info("API RESPONSE : {} [{}]", uri, result.getStatusCode());
+        log.info("API RESPONSE : {} [{}]", request.getRequestURI(), result.getStatusCode());
+    }
+
+    /**
+     * API 응답 중 Exception 발생 후 RestControllerAdvice 에서 처리 시 동작. <br>
+     * API 요청에 대한 URI, Status 로깅.
+     *
+     * @param result ResponseEntity<?> 값
+     */
+    @AfterReturning(pointcut = "execution(* kr.aling.file.common.advice.AlingFileControllerAdvice..*(..))",
+            returning = "result")
+    public void doErrorResponseLogging(ResponseEntity<?> result) {
+        HttpServletRequest request = getHttpServletRequest();
+
+        log.warn("API RESPONSE : {} [{}]", request.getRequestURI(), result.getStatusCode());
     }
 
     /**
