@@ -15,6 +15,7 @@ import kr.aling.file.common.dto.FileInfoDto;
 import kr.aling.file.common.properties.ObjectStorageProperties;
 import kr.aling.file.common.util.FileInfoUtil;
 import kr.aling.file.file.dto.request.StorageTokenRequestDto;
+import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.dto.response.StorageTokenResponseDto;
 import kr.aling.file.file.entity.AlingFile;
 import kr.aling.file.file.exception.FileSaveException;
@@ -24,6 +25,7 @@ import kr.aling.file.filecategory.entity.FileCategory;
 import kr.aling.file.filecategory.exception.FileCategoryNotFoundException;
 import kr.aling.file.filecategory.repository.FileCategoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpMessageConverterExtractor;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 파일을 Object Storage 장소에 저장 하는 FileServcie 구현체.
@@ -43,6 +46,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ObjectStorageFileServiceImpl implements FileService {
 
     private final ObjectStorageProperties objectStorageProperties;
@@ -119,6 +123,62 @@ public class ObjectStorageFileServiceImpl implements FileService {
             throw new FileSaveException();
         }
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param multipartFile     MultipartFile
+     * @param fileCategoryNo    파일 Category 번호
+     * @return 이미지 주소
+     */
+    @Override
+    public HookResponseDto saveOnlyHookImageFile(MultipartFile multipartFile, Integer fileCategoryNo) {
+        log.info("file = {}", multipartFile.getOriginalFilename());
+
+        if (hasToIssuedToken()) {
+            requestStorageToken();
+        }
+
+        FileCategory fileCategory = fileCategoryRepository.findById(fileCategoryNo)
+                .orElseThrow(FileCategoryNotFoundException::new);
+
+        FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(multipartFile);
+        String pathUrl = objectStorageProperties.getStoreUrl() + DIRECTORY +
+                objectStorageProperties.getContainerName() + DIRECTORY +
+                fileCategory.getName() + DIRECTORY + fileInfoDto.getSaveFileName();
+
+        final RequestCallback requestCallback = req -> {
+            req.getHeaders().add(X_AUTH_TOKEN, tokenId);
+
+            try (InputStream is = multipartFile.getInputStream()) {
+                int len;
+                byte[] buf = new byte[4096];
+
+                while ((len = is.read(buf)) != -1) {
+                    req.getBody().write(buf, 0, len);
+                }
+            }
+        };
+
+        HttpMessageConverterExtractor<String> responseExtractor
+                = new HttpMessageConverterExtractor<>(String.class, restTemplate.getMessageConverters());
+
+        restTemplate.execute(pathUrl, HttpMethod.PUT, requestCallback, responseExtractor);
+
+        AlingFile file = AlingFile.builder()
+                .fileCategory(fileCategory)
+                .path(pathUrl)
+                .originName(fileInfoDto.getOriginFileName())
+                .saveName(fileInfoDto.getSaveFileName())
+                .size(calculateFileSize(multipartFile.getSize()))
+                .createAt(LocalDateTime.now())
+                .build();
+
+        fileRepository.save(file);
+
+        return new HookResponseDto(pathUrl);
+    }
+
 
     /**
      * 토큰을 요청해 발급 받는 메서드.
