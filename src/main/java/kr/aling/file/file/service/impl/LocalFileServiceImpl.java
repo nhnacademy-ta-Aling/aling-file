@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 import kr.aling.file.common.dto.FileInfoDto;
 import kr.aling.file.common.util.FileInfoUtil;
+import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.entity.AlingFile;
 import kr.aling.file.file.exception.FileSaveException;
 import kr.aling.file.file.repository.AlingFileRepository;
@@ -23,6 +24,7 @@ import kr.aling.file.filecategory.repository.FileCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 파일을 Local 환경에 저장 하는 Service 구현체.
@@ -91,5 +93,17 @@ public class LocalFileServiceImpl implements FileService {
             throw new FileSaveException();
         }
 
+    }
+
+    /**
+     * 사용 하지 않는 메서드. (Local 파일 저장)
+     *
+     * @param multipartFile     MultipartFile
+     * @param fileCategoryNo    파일 Category 번호
+     * @return null
+     */
+    @Override
+    public HookResponseDto saveOnlyHookImageFile(MultipartFile multipartFile, Integer fileCategoryNo) {
+        return null;
     }
 }

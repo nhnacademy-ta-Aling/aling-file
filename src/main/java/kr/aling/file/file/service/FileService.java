@@ -1,6 +1,8 @@
 package kr.aling.file.file.service;
 
 import javax.servlet.http.HttpServletRequest;
+import kr.aling.file.file.dto.response.HookResponseDto;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 파일 서비스 interface.
@@ -25,5 +27,12 @@ public interface FileService {
      */
     void saveFile(HttpServletRequest request, Integer fileCategoryNo);
 
-
+    /**
+     * Toast UI Hook 통해 이미지 저장.
+     *
+     * @param multipartFile     MultipartFile
+     * @param fileCategoryNo    파일 Category 번호
+     * @return Hook 응답 Dto
+     */
+    HookResponseDto saveOnlyHookImageFile(MultipartFile multipartFile, Integer fileCategoryNo);
 }
