@@ -96,7 +96,7 @@ public class LocalFileServiceImpl implements FileService {
     }
 
     /**
-     * {@inheritDoc}
+     * 사용 하지 않는 메서드. (Local 파일 저장)
      *
      * @param multipartFile     MultipartFile
      * @param fileCategoryNo    파일 Category 번호
