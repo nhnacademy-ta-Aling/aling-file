@@ -1,0 +1,12 @@
+// request-fields.snippet
+|===
+|Path|Type|Description|Validation
+
+{{#fields}}
+|{{#tableCellContent}}`+{{path}}+`{{/tableCellContent}}
+|{{#tableCellContent}}`+{{type}}+`{{/tableCellContent}}
+|{{#tableCellContent}}{{description}}{{/tableCellContent}}
+|{{#tableCellContent}}{{valid}}{{/tableCellContent}}
+
+{{/fields}}
+|===
