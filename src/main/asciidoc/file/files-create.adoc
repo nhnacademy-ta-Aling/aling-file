@@ -1,0 +1,19 @@
+:toc:
+
+==== 여러 파일 등록
+
+===== 요청
+
+operation::files-upload[snippets='http-request']
+
+===== 요청 헤더
+
+operation::files-upload[snippets='request-headers']
+
+===== 요청 바디(파트)
+
+operation::files-upload[snippets='request-parts']
+
+===== 응답
+
+operation::files-upload[snippets='http-response']
