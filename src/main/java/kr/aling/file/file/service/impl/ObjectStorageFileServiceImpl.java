@@ -7,10 +7,8 @@ import static kr.aling.file.common.util.FileSizeUtil.calculateFileSize;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
 import kr.aling.file.common.dto.FileInfoDto;
 import kr.aling.file.common.properties.ObjectStorageProperties;
 import kr.aling.file.common.util.FileInfoUtil;
@@ -71,11 +69,11 @@ public class ObjectStorageFileServiceImpl implements FileService {
     /**
      * {@inheritDoc}
      *
-     * @param request        HttpServletRequest
-     * @param fileCategoryNo 파일 Category 번호
+     * @param files             MultipartFile 파일들
+     * @param fileCategoryNo    파일 Category 번호
      */
     @Override
-    public void saveFile(HttpServletRequest request, Integer fileCategoryNo) {
+    public void saveFile(List<MultipartFile> files, Integer fileCategoryNo) {
         if (hasToIssuedToken()) {
             requestStorageToken();
         }
@@ -83,44 +81,42 @@ public class ObjectStorageFileServiceImpl implements FileService {
         FileCategory fileCategory = fileCategoryRepository.findById(fileCategoryNo)
                 .orElseThrow(FileCategoryNotFoundException::new);
 
-        try {
-            for (Part part : request.getParts()) {
-                FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(part);
-                String pathUrl = objectStorageProperties.getStoreUrl() + DIRECTORY +
-                        objectStorageProperties.getContainerName() + DIRECTORY +
-                        fileCategory.getName() + DIRECTORY + fileInfoDto.getSaveFileName();
+        for (MultipartFile file : files) {
+            FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(file);
+            String pathUrl = objectStorageProperties.getStoreUrl() + DIRECTORY +
+                    objectStorageProperties.getContainerName() + DIRECTORY +
+                    fileCategory.getName() + DIRECTORY + fileInfoDto.getSaveFileName();
 
-                final RequestCallback requestCallback = req -> {
-                    req.getHeaders().add(X_AUTH_TOKEN, tokenId);
+            final RequestCallback requestCallback = req -> {
+                req.getHeaders().add(X_AUTH_TOKEN, tokenId);
 
-                    try (InputStream is = part.getInputStream()) {
-                        int len;
-                        byte[] buf = new byte[4096];
+                try (InputStream is = file.getInputStream()) {
+                    int len;
+                    byte[] buf = new byte[4096];
 
-                        while ((len = is.read(buf)) != -1) {
-                            req.getBody().write(buf, 0, len);
-                        }
+                    while ((len = is.read(buf)) != -1) {
+                        req.getBody().write(buf, 0, len);
                     }
-                };
+                } catch (IOException e) {
+                    throw new FileSaveException();
+                }
+            };
 
-                HttpMessageConverterExtractor<String> responseExtractor
-                        = new HttpMessageConverterExtractor<>(String.class, restTemplate.getMessageConverters());
+            HttpMessageConverterExtractor<String> responseExtractor
+                    = new HttpMessageConverterExtractor<>(String.class, restTemplate.getMessageConverters());
 
-                restTemplate.execute(pathUrl, HttpMethod.PUT, requestCallback, responseExtractor);
+            restTemplate.execute(pathUrl, HttpMethod.PUT, requestCallback, responseExtractor);
 
-                AlingFile file = AlingFile.builder()
-                        .fileCategory(fileCategory)
-                        .path(pathUrl)
-                        .originName(fileInfoDto.getOriginFileName())
-                        .saveName(fileInfoDto.getSaveFileName())
-                        .size(calculateFileSize(part.getSize()))
-                        .createAt(LocalDateTime.now())
-                        .build();
+            AlingFile alingFile = AlingFile.builder()
+                    .fileCategory(fileCategory)
+                    .path(pathUrl)
+                    .originName(fileInfoDto.getOriginFileName())
+                    .saveName(fileInfoDto.getSaveFileName())
+                    .size(calculateFileSize(file.getSize()))
+                    .createAt(LocalDateTime.now())
+                    .build();
 
-                fileRepository.save(file);
-            }
-        } catch (ServletException | IOException e) {
-            throw new FileSaveException();
+            fileRepository.save(alingFile);
         }
     }
 
@@ -133,8 +129,6 @@ public class ObjectStorageFileServiceImpl implements FileService {
      */
     @Override
     public HookResponseDto saveOnlyHookImageFile(MultipartFile multipartFile, Integer fileCategoryNo) {
-        log.info("file = {}", multipartFile.getOriginalFilename());
-
         if (hasToIssuedToken()) {
             requestStorageToken();
         }
@@ -164,17 +158,6 @@ public class ObjectStorageFileServiceImpl implements FileService {
                 = new HttpMessageConverterExtractor<>(String.class, restTemplate.getMessageConverters());
 
         restTemplate.execute(pathUrl, HttpMethod.PUT, requestCallback, responseExtractor);
-
-        AlingFile file = AlingFile.builder()
-                .fileCategory(fileCategory)
-                .path(pathUrl)
-                .originName(fileInfoDto.getOriginFileName())
-                .saveName(fileInfoDto.getSaveFileName())
-                .size(calculateFileSize(multipartFile.getSize()))
-                .createAt(LocalDateTime.now())
-                .build();
-
-        fileRepository.save(file);
 
         return new HookResponseDto(pathUrl);
     }

@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
+import java.util.List;
 import kr.aling.file.common.dto.FileInfoDto;
 import kr.aling.file.common.util.FileInfoUtil;
 import kr.aling.file.file.dto.response.HookResponseDto;
@@ -55,44 +53,41 @@ public class LocalFileServiceImpl implements FileService {
     /**
      * {@inheritDoc}
      *
-     * @param request        HttpServletRequest
-     * @param fileCategoryNo 파일 Category 번호
+     * @param files             MultipartFile 파일들
+     * @param fileCategoryNo    파일 Category 번호
      */
     @Override
-    public void saveFile(HttpServletRequest request, Integer fileCategoryNo) {
+    public void saveFile(List<MultipartFile> files, Integer fileCategoryNo) {
         FileCategory fileCategory = fileCategoryRepository.findById(fileCategoryNo)
                 .orElseThrow(FileCategoryNotFoundException::new);
 
-        try {
-            for (Part part : request.getParts()) {
-                FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(part);
-                String path = ROOT_PATH + fileInfoDto.getSaveFileName();
+        for (MultipartFile file : files) {
+            FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(file);
+            String path = ROOT_PATH + fileInfoDto.getSaveFileName();
 
-                try (InputStream is = part.getInputStream(); OutputStream os = new FileOutputStream(path)) {
+            try (InputStream is = file.getInputStream(); OutputStream os = new FileOutputStream(path)) {
 
-                    int len;
-                    byte[] buf = new byte[4096];
+                int len;
+                byte[] buf = new byte[4096];
 
-                    while ((len = is.read(buf)) != -1) {
-                        os.write(buf, 0, len);
-                    }
+                while ((len = is.read(buf)) != -1) {
+                    os.write(buf, 0, len);
                 }
-
-                AlingFile file = AlingFile.builder()
-                        .fileCategory(fileCategory)
-                        .path(path)
-                        .originName(fileInfoDto.getOriginFileName())
-                        .saveName(fileInfoDto.getSaveFileName())
-                        .size(calculateFileSize(part.getSize()))
-                        .createAt(LocalDateTime.now())
-                        .build();
-
-                fileRepository.save(file);
+            } catch (IOException e) {
+                throw new FileSaveException();
             }
-        } catch (ServletException | IOException e) {
-            throw new FileSaveException();
-        }
 
+            AlingFile alingFile = AlingFile.builder()
+                    .fileCategory(fileCategory)
+                    .path(path)
+                    .originName(fileInfoDto.getOriginFileName())
+                    .saveName(fileInfoDto.getSaveFileName())
+                    .size(calculateFileSize(file.getSize()))
+                    .createAt(LocalDateTime.now())
+                    .build();
+
+            fileRepository.save(alingFile);
+        }
     }
 
     /**
