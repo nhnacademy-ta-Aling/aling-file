@@ -1,18 +1,25 @@
 package kr.aling.file.file.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import kr.aling.file.file.dto.response.HookResponseDto;
+import kr.aling.file.file.exception.FileRequestCountOverException;
 import kr.aling.file.file.service.impl.LocalFileServiceImpl;
+import kr.aling.file.file.service.impl.ObjectStorageFileServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(SpringExtension.class)
 class FileFacadeServiceTest {
@@ -26,19 +33,65 @@ class FileFacadeServiceTest {
     @Mock
     LocalFileServiceImpl localFileService;
 
+    @Mock
+    ObjectStorageFileServiceImpl objectStorageFileService;
+
     @Test
     @DisplayName("FileFacadeService uploadFiles 메서드 테스트")
     void uploadFiles_method_test() {
         // given
-        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockMultipartFile file = new MockMultipartFile("test", "test.png", "image/png", "test".getBytes());
 
         // when
         when(fileServiceResolver.chooseFileService(anyString())).thenReturn(localFileService);
 
         // then
-        fileFacadeService.uploadFiles(request, 1, "location");
+        fileFacadeService.uploadFiles(List.of(file), 1, "location");
 
         verify(fileServiceResolver, times(1)).chooseFileService(anyString());
+    }
+
+    @Test
+    @DisplayName("FileFacadeService uploadHookImage 메서드 테스트")
+    void uploadHookImage_method_test() {
+        // given
+        MockMultipartFile multipartFile = new MockMultipartFile("test", "test".getBytes());
+        HookResponseDto hookResponseDto = new HookResponseDto("path");
+
+        // when
+        when(fileServiceResolver.chooseFileService(anyString())).thenReturn(objectStorageFileService);
+        when(objectStorageFileService.saveOnlyHookImageFile(multipartFile, 1)).thenReturn(hookResponseDto);
+
+        // then
+        HookResponseDto result = fileFacadeService.uploadHookImage(multipartFile, 1, "location");
+
+        assertThat(result.getPath()).isEqualTo(hookResponseDto.getPath());
+        verify(fileServiceResolver, times(1)).chooseFileService(anyString());
+    }
+
+    @Test
+    @DisplayName("File 10개가 넘는 경우 예외 테스트")
+    void file_count_over_exception_test() {
+        // given
+        List<MultipartFile> fileList = List.of(
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes()),
+                new MockMultipartFile("test", "test".getBytes())
+        );
+
+        // when
+
+        // then
+        assertThatThrownBy(() -> fileFacadeService.uploadFiles(fileList, 1, "location"))
+                .isInstanceOf(FileRequestCountOverException.class);
     }
 
 }
