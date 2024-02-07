@@ -3,7 +3,7 @@ package kr.aling.file.file.controller;
 import static kr.aling.file.common.util.ConstantUtil.X_FILE_CATEGORY;
 import static kr.aling.file.common.util.ConstantUtil.X_FILE_SAVE_LOCATION;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.service.FileFacadeService;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +32,16 @@ public class FileController {
     /**
      * File 업로드 API.
      *
-     * @param request          HttpServletRequest
+     * @param files            MultipartFiles Files
      * @param fileSaveLocation 파일 저장 위치
      * @param fileCategoryNo   파일 Category 번호
      * @return Status 201
      */
     @PostMapping("/files")
-    public ResponseEntity<Void> uploadFiles(HttpServletRequest request,
+    public ResponseEntity<Void> uploadFiles(@RequestPart("files") List<MultipartFile> files,
                                             @RequestHeader(X_FILE_SAVE_LOCATION) String fileSaveLocation,
                                             @RequestHeader(X_FILE_CATEGORY) Integer fileCategoryNo) {
-        fileFacadeService.uploadFiles(request, fileCategoryNo, fileSaveLocation);
+        fileFacadeService.uploadFiles(files, fileCategoryNo, fileSaveLocation);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
