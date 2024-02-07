@@ -84,8 +84,6 @@ class ObjectStorageFileServiceTest {
         ReflectionTestUtils.setField(objectStorageFileService, "tokenId", "token info");
         ReflectionTestUtils.setField(objectStorageFileService, "tokenExpires", LocalDateTime.now().plusMinutes(1));
 
-//        MockHttpServletRequest request = new MockHttpServletRequest();
-//        request.addPart(new MockPart("test", "test.png", "test".getBytes()));
 
         // when
         when(fileCategoryRepository.findById(anyInt())).thenReturn(Optional.of(mock(FileCategory.class)));
@@ -112,8 +110,6 @@ class ObjectStorageFileServiceTest {
     @DisplayName("파일 저장 성공 테스트 (토큰이 없는 경우)")
     void object_storage_file_save_test_with_no_token() {
         // given
-//        MockHttpServletRequest request = new MockHttpServletRequest();
-//        request.addPart(new MockPart("test", "test.png", "test".getBytes()));
 
         StorageTokenResponseDto tokenResponseDto = new StorageTokenResponseDto();
         StorageTokenResponseDto.Access access = new StorageTokenResponseDto.Access();

@@ -56,13 +56,13 @@ class FileControllerTest {
     MockMultipartFile multipartFileImage;
     MockMultipartFile multipartFilePdf;
 
-    String url = "/api/v1";
-    String files = "files";
+    private static final String URL = "/api/v1";
+    private static final String FILES = "files";
 
     @BeforeEach
     void setUp() {
-        multipartFileImage = new MockMultipartFile(files, "test.png", "image/png", "image byte".getBytes());
-        multipartFilePdf = new MockMultipartFile(files, "test2.pdf", "application/pdf", "pdf file data".getBytes());
+        multipartFileImage = new MockMultipartFile(FILES, "test.png", "image/png", "image byte".getBytes());
+        multipartFilePdf = new MockMultipartFile(FILES, "test2.pdf", "application/pdf", "pdf file data".getBytes());
     }
 
     @Test
@@ -74,7 +74,7 @@ class FileControllerTest {
         doNothing().when(fileFacadeService).uploadFiles(any(List.class), anyInt(), anyString());
 
         // then
-        mvc.perform(multipart(url + "/files")
+        mvc.perform(multipart(URL + "/files")
                         .file(multipartFileImage)
                         .file(multipartFilePdf)
                         .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE)
@@ -91,7 +91,7 @@ class FileControllerTest {
                         ),
 
                         requestParts(
-                                partWithName(files).description("파일 리스트")
+                                partWithName(FILES).description("파일 리스트")
                         )
 
                 ));
@@ -107,7 +107,7 @@ class FileControllerTest {
         // when
 
         // then
-        mvc.perform(multipart(url + "/files")
+        mvc.perform(multipart(URL + "/files")
                         .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE)
                         .header(X_FILE_CATEGORY, 4))
                 .andDo(print())
@@ -124,7 +124,7 @@ class FileControllerTest {
         // when
 
         // then
-        mvc.perform(multipart(url + "/files")
+        mvc.perform(multipart(URL + "/files")
                         .file(multipartFileImage)
                         .header(X_FILE_CATEGORY, 4))
                 .andDo(print())
@@ -141,7 +141,7 @@ class FileControllerTest {
         // when
 
         // then
-        mvc.perform(multipart(url + "/files")
+        mvc.perform(multipart(URL + "/files")
                         .file(multipartFileImage)
                         .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE))
                 .andDo(print())
@@ -162,7 +162,7 @@ class FileControllerTest {
                 hookResponseDto);
 
         // then
-        mvc.perform(multipart(url + "/hook-files")
+        mvc.perform(multipart(URL + "/hook-files")
                         .file(multipartFile)
                         .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE)
                         .header(X_FILE_CATEGORY, 4))
@@ -198,7 +198,7 @@ class FileControllerTest {
         // when
 
         // then
-        mvc.perform(multipart(url + "/hook-files")
+        mvc.perform(multipart(URL + "/hook-files")
                         .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE)
                         .header(X_FILE_CATEGORY, 4))
                 .andDo(print())
@@ -216,7 +216,7 @@ class FileControllerTest {
         // when
 
         // then
-        mvc.perform(multipart(url + "/hook-files")
+        mvc.perform(multipart(URL + "/hook-files")
                         .file(file)
                         .header(X_FILE_CATEGORY, 4))
                 .andDo(print())
@@ -234,7 +234,7 @@ class FileControllerTest {
         // when
 
         // then
-        mvc.perform(multipart(url + "/hook-files")
+        mvc.perform(multipart(URL + "/hook-files")
                         .file(file)
                         .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE))
                 .andDo(print())

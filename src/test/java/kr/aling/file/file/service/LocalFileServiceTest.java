@@ -84,8 +84,6 @@ class LocalFileServiceTest {
     @DisplayName("file 저장 서비스 저장 테스트")
     void file_save_service_test() {
         // given
-//        MockHttpServletRequest request = new MockHttpServletRequest();
-//        request.addPart(new MockPart("test", "test.png", "test".getBytes()));
 
         // when
 
@@ -102,7 +100,6 @@ class LocalFileServiceTest {
     @DisplayName("file 저장 실패 테스트 - FileCategory 없음")
     void file_save_fail_test_no_fileCategory() {
         // given
-//        MockHttpServletRequest request = new MockHttpServletRequest();
 
         // when
         when(fileCategoryRepository.findById(anyInt())).thenReturn(Optional.empty());
