@@ -3,6 +3,7 @@ package kr.aling.file.file.service;
 import static kr.aling.file.common.util.ConstantUtil.FILES_REQUEST_LIMIT_COUNT;
 
 import java.util.List;
+import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.exception.FileRequestCountOverException;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +28,15 @@ public class FileFacadeService {
      * @param files            MultipartFile 파일들
      * @param fileCategoryNo   파일 Category 번호
      * @param fileSaveLocation 파일 저장 위치
+     * @return 파일 번호 List.
      */
-    public void uploadFiles(List<MultipartFile> files, Integer fileCategoryNo, String fileSaveLocation) {
+    public List<FileUploadResponseDto> uploadFiles(List<MultipartFile> files, Integer fileCategoryNo,
+                                                   String fileSaveLocation) {
         if (files.size() > FILES_REQUEST_LIMIT_COUNT) {
             throw new FileRequestCountOverException();
         }
 
-        fileServiceResolver.chooseFileService(fileSaveLocation).saveFile(files, fileCategoryNo);
+        return fileServiceResolver.chooseFileService(fileSaveLocation).saveFile(files, fileCategoryNo);
     }
 
     /**

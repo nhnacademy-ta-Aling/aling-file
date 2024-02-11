@@ -7,12 +7,14 @@ import static kr.aling.file.common.util.FileSizeUtil.calculateFileSize;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import kr.aling.file.common.dto.FileInfoDto;
 import kr.aling.file.common.properties.ObjectStorageProperties;
 import kr.aling.file.common.util.FileInfoUtil;
 import kr.aling.file.file.dto.request.StorageTokenRequestDto;
+import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.dto.response.StorageTokenResponseDto;
 import kr.aling.file.file.entity.AlingFile;
@@ -59,7 +61,7 @@ public class ObjectStorageFileServiceImpl implements FileService {
     /**
      * {@inheritDoc}
      *
-     * @return
+     * @return NHN Cloud Object Storage
      */
     @Override
     public String getSaveLocation() {
@@ -71,9 +73,10 @@ public class ObjectStorageFileServiceImpl implements FileService {
      *
      * @param files             MultipartFile 파일들
      * @param fileCategoryNo    파일 Category 번호
+     * @return 파일 번호 List
      */
     @Override
-    public void saveFile(List<MultipartFile> files, Integer fileCategoryNo) {
+    public List<FileUploadResponseDto> saveFile(List<MultipartFile> files, Integer fileCategoryNo) {
         if (hasToIssuedToken()) {
             requestStorageToken();
         }
@@ -81,11 +84,13 @@ public class ObjectStorageFileServiceImpl implements FileService {
         FileCategory fileCategory = fileCategoryRepository.findById(fileCategoryNo)
                 .orElseThrow(FileCategoryNotFoundException::new);
 
+        List<FileUploadResponseDto> fileUploadResponseDtoList = new ArrayList<>();
+
         for (MultipartFile file : files) {
             FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(file);
-            String pathUrl = objectStorageProperties.getStoreUrl() + DIRECTORY +
-                    objectStorageProperties.getContainerName() + DIRECTORY +
-                    fileCategory.getName() + DIRECTORY + fileInfoDto.getSaveFileName();
+            String pathUrl = objectStorageProperties.getStoreUrl() + DIRECTORY
+                    + objectStorageProperties.getContainerName() + DIRECTORY
+                    + fileCategory.getName() + DIRECTORY + fileInfoDto.getSaveFileName();
 
             final RequestCallback requestCallback = req -> {
                 req.getHeaders().add(X_AUTH_TOKEN, tokenId);
@@ -116,8 +121,10 @@ public class ObjectStorageFileServiceImpl implements FileService {
                     .createAt(LocalDateTime.now())
                     .build();
 
-            fileRepository.save(alingFile);
+            fileUploadResponseDtoList.add(new FileUploadResponseDto(fileRepository.save(alingFile).getFileNo()));
         }
+
+        return fileUploadResponseDtoList;
     }
 
     /**
@@ -137,9 +144,9 @@ public class ObjectStorageFileServiceImpl implements FileService {
                 .orElseThrow(FileCategoryNotFoundException::new);
 
         FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(multipartFile);
-        String pathUrl = objectStorageProperties.getStoreUrl() + DIRECTORY +
-                objectStorageProperties.getContainerName() + DIRECTORY +
-                fileCategory.getName() + DIRECTORY + fileInfoDto.getSaveFileName();
+        String pathUrl = objectStorageProperties.getStoreUrl() + DIRECTORY
+                + objectStorageProperties.getContainerName() + DIRECTORY
+                + fileCategory.getName() + DIRECTORY + fileInfoDto.getSaveFileName();
 
         final RequestCallback requestCallback = req -> {
             req.getHeaders().add(X_AUTH_TOKEN, tokenId);
@@ -193,7 +200,7 @@ public class ObjectStorageFileServiceImpl implements FileService {
      *     <li>토큰 유효 시간이 30초 보다 적은 경우</li>
      * </ol>
      *
-     * @return
+     * @return boolean
      */
     private boolean hasToIssuedToken() {
         return ((Objects.isNull(tokenId)) || isTokenExpiresValid());
