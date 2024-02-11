@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.servlet.ServletException;
 import kr.aling.file.common.enums.FileSaveLocation;
+import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.entity.AlingFile;
 import kr.aling.file.file.exception.FileSaveException;
@@ -34,6 +35,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(SpringExtension.class)
@@ -84,13 +86,18 @@ class LocalFileServiceTest {
     @DisplayName("file 저장 서비스 저장 테스트")
     void file_save_service_test() {
         // given
+        AlingFile alingFile = AlingFile.builder().build();
+        ReflectionTestUtils.setField(alingFile, "fileNo", 1L);
 
         // when
-
         when(fileCategoryRepository.findById(anyInt())).thenReturn(Optional.of(mock(FileCategory.class)));
+        when(fileRepository.save(any(AlingFile.class))).thenReturn(alingFile);
 
         // then
-        localFileService.saveFile(List.of(multipartFile), 1);
+        List<FileUploadResponseDto> fileUploadResponseDtoList = localFileService.saveFile(List.of(multipartFile), 1);
+
+        assertThat(fileUploadResponseDtoList).isNotNull();
+        assertThat(fileUploadResponseDtoList.get(0).getFileNo()).isEqualTo(1L);
 
         verify(fileCategoryRepository, times(1)).findById(anyInt());
         verify(fileRepository, times(1)).save(any(AlingFile.class));
