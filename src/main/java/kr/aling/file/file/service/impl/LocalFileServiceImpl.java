@@ -8,9 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import kr.aling.file.common.dto.FileInfoDto;
 import kr.aling.file.common.util.FileInfoUtil;
+import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.entity.AlingFile;
 import kr.aling.file.file.exception.FileSaveException;
@@ -55,11 +57,14 @@ public class LocalFileServiceImpl implements FileService {
      *
      * @param files             MultipartFile 파일들
      * @param fileCategoryNo    파일 Category 번호
+     * @return 파일 번호 List
      */
     @Override
-    public void saveFile(List<MultipartFile> files, Integer fileCategoryNo) {
+    public List<FileUploadResponseDto> saveFile(List<MultipartFile> files, Integer fileCategoryNo) {
         FileCategory fileCategory = fileCategoryRepository.findById(fileCategoryNo)
                 .orElseThrow(FileCategoryNotFoundException::new);
+
+        List<FileUploadResponseDto> fileUploadResponseDtoList = new ArrayList<>();
 
         for (MultipartFile file : files) {
             FileInfoDto fileInfoDto = FileInfoUtil.generateFileInfo(file);
@@ -86,8 +91,10 @@ public class LocalFileServiceImpl implements FileService {
                     .createAt(LocalDateTime.now())
                     .build();
 
-            fileRepository.save(alingFile);
+            fileUploadResponseDtoList.add(new FileUploadResponseDto(fileRepository.save(alingFile).getFileNo()));
         }
+
+        return fileUploadResponseDtoList;
     }
 
     /**

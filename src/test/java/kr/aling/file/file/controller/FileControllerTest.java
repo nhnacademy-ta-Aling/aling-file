@@ -6,7 +6,6 @@ import static kr.aling.file.common.util.ConstantUtil.X_FILE_SAVE_LOCATION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.service.FileFacadeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +56,8 @@ class FileControllerTest {
     MockMultipartFile multipartFileImage;
     MockMultipartFile multipartFilePdf;
 
+    List<FileUploadResponseDto> fileUploadResponseDtoList;
+
     private static final String URL = "/api/v1";
     private static final String FILES = "files";
 
@@ -63,6 +65,8 @@ class FileControllerTest {
     void setUp() {
         multipartFileImage = new MockMultipartFile(FILES, "test.png", "image/png", "image byte".getBytes());
         multipartFilePdf = new MockMultipartFile(FILES, "test2.pdf", "application/pdf", "pdf file data".getBytes());
+
+        fileUploadResponseDtoList = List.of(new FileUploadResponseDto(1L), new FileUploadResponseDto(2L));
     }
 
     @Test
@@ -71,7 +75,8 @@ class FileControllerTest {
         // given
 
         // when
-        doNothing().when(fileFacadeService).uploadFiles(any(List.class), anyInt(), anyString());
+        when(fileFacadeService.uploadFiles(any(List.class), anyInt(), anyString())).thenReturn(
+                fileUploadResponseDtoList);
 
         // then
         mvc.perform(multipart(URL + "/files")
@@ -80,6 +85,8 @@ class FileControllerTest {
                         .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE)
                         .header(X_FILE_CATEGORY, 4))
                 .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$[0].fileNo").value(fileUploadResponseDtoList.get(0).getFileNo()))
+                .andExpect(jsonPath("$[1].fileNo").value(fileUploadResponseDtoList.get(1).getFileNo()))
                 .andDo(print())
                 .andDo(document("files-upload",
                         preprocessRequest(prettyPrint()),
@@ -92,6 +99,10 @@ class FileControllerTest {
 
                         requestParts(
                                 partWithName(FILES).description("파일 리스트")
+                        ),
+
+                        responseFields(
+                                fieldWithPath("[].fileNo").description("파일 번호")
                         )
 
                 ));

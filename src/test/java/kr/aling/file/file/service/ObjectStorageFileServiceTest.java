@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.aling.file.common.enums.FileSaveLocation;
 import kr.aling.file.common.properties.ObjectStorageProperties;
+import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.StorageTokenResponseDto;
 import kr.aling.file.file.entity.AlingFile;
 import kr.aling.file.file.repository.AlingFileRepository;
@@ -84,6 +85,8 @@ class ObjectStorageFileServiceTest {
         ReflectionTestUtils.setField(objectStorageFileService, "tokenId", "token info");
         ReflectionTestUtils.setField(objectStorageFileService, "tokenExpires", LocalDateTime.now().plusMinutes(1));
 
+        AlingFile alingFile = AlingFile.builder().build();
+        ReflectionTestUtils.setField(alingFile, "fileNo", 1L);
 
         // when
         when(fileCategoryRepository.findById(anyInt())).thenReturn(Optional.of(mock(FileCategory.class)));
@@ -91,10 +94,15 @@ class ObjectStorageFileServiceTest {
         when(objectStorageProperties.getContainerName()).thenReturn("container");
 
         when(restTemplate.getMessageConverters()).thenReturn(List.of(new MappingJackson2HttpMessageConverter()));
-        when(restTemplate.execute(anyString(), any(), any(RequestCallback.class), any())).thenReturn(any(String.class));
+        when(restTemplate.execute(anyString(), any(), any(), any())).thenReturn("200");
+        when(fileRepository.save(any(AlingFile.class))).thenReturn(alingFile);
 
         // then
-        objectStorageFileService.saveFile(List.of(multipartFile), 1);
+        List<FileUploadResponseDto> fileUploadResponseDtoList =
+                objectStorageFileService.saveFile(List.of(multipartFile), 1);
+
+        assertThat(fileUploadResponseDtoList).isNotNull();
+        assertThat(fileUploadResponseDtoList.get(0).getFileNo()).isEqualTo(alingFile.getFileNo());
 
         verify(objectStorageProperties, times(0)).getTokenIssueUrl();
         verify(objectStorageProperties, times(0)).getUsername();
@@ -110,7 +118,6 @@ class ObjectStorageFileServiceTest {
     @DisplayName("파일 저장 성공 테스트 (토큰이 없는 경우)")
     void object_storage_file_save_test_with_no_token() {
         // given
-
         StorageTokenResponseDto tokenResponseDto = new StorageTokenResponseDto();
         StorageTokenResponseDto.Access access = new StorageTokenResponseDto.Access();
         StorageTokenResponseDto.Token token = new StorageTokenResponseDto.Token();
@@ -121,6 +128,9 @@ class ObjectStorageFileServiceTest {
         ReflectionTestUtils.setField(token, "expires", LocalDateTime.now().plusHours(1));
 
         ResponseEntity<StorageTokenResponseDto> response = new ResponseEntity<>(tokenResponseDto, HttpStatus.OK);
+
+        AlingFile alingFile = AlingFile.builder().build();
+        ReflectionTestUtils.setField(alingFile, "fileNo", 1L);
 
         // when
         when(objectStorageProperties.getTenantId()).thenReturn("tenantId");
@@ -137,6 +147,8 @@ class ObjectStorageFileServiceTest {
 
         when(restTemplate.getMessageConverters()).thenReturn(List.of(new MappingJackson2HttpMessageConverter()));
         when(restTemplate.execute(anyString(), any(), any(), any())).thenReturn("200");
+
+        when(fileRepository.save(any(AlingFile.class))).thenReturn(alingFile);
 
         // then
         objectStorageFileService.saveFile(List.of(multipartFile), 1);
