@@ -200,7 +200,7 @@ public class ObjectStorageFileServiceImpl implements FileService {
      *     <li>토큰 유효 시간이 30초 보다 적은 경우</li>
      * </ol>
      *
-     * @return boolean
+     * @return 토큰이 재발급 필요 하면 true, 그 외 false
      */
     private boolean hasToIssuedToken() {
         return ((Objects.isNull(tokenId)) || isTokenExpiresValid());
@@ -210,7 +210,7 @@ public class ObjectStorageFileServiceImpl implements FileService {
      * 토큰의 유효 시간이 남아 있는지 체크 하는 메서드. <Br>
      * 현재 시간 기준 30초 보다 적으면 토큰 재발급 필요.
      *
-     * @return boolean
+     * @return 토큰 시간 30초 보다 적으면 true, 그 외 false
      */
     private boolean isTokenExpiresValid() {
         return tokenExpires.minusSeconds(30).isBefore(LocalDateTime.now());
