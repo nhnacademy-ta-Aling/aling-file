@@ -2,7 +2,7 @@ package kr.aling.file.filecategory.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import kr.aling.file.dummy.FileCategoryDummy;
+import kr.aling.file.filecategory.dummy.FileCategoryDummy;
 import kr.aling.file.filecategory.entity.FileCategory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

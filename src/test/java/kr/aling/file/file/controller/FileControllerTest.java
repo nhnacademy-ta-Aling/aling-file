@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
-import kr.aling.file.file.service.FileFacadeService;
+import kr.aling.file.file.service.facade.FileFacadeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

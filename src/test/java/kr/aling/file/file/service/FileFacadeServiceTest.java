@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.exception.FileRequestCountOverException;
+import kr.aling.file.file.service.facade.FileFacadeService;
 import kr.aling.file.file.service.impl.LocalFileServiceImpl;
 import kr.aling.file.file.service.impl.ObjectStorageFileServiceImpl;
 import org.junit.jupiter.api.DisplayName;

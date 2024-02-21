@@ -1,4 +1,4 @@
-package kr.aling.file.dummy;
+package kr.aling.file.file.dummy;
 
 import java.time.LocalDateTime;
 import kr.aling.file.file.entity.AlingFile;
