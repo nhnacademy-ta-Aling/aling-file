@@ -1,4 +1,4 @@
-package kr.aling.file.file.service;
+package kr.aling.file.file.service.facade;
 
 import static kr.aling.file.common.util.ConstantUtil.FILES_REQUEST_LIMIT_COUNT;
 
@@ -6,6 +6,7 @@ import java.util.List;
 import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.exception.FileRequestCountOverException;
+import kr.aling.file.file.service.FileServiceResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
