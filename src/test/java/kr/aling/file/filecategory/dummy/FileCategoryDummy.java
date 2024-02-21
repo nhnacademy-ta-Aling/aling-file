@@ -1,4 +1,4 @@
-package kr.aling.file.dummy;
+package kr.aling.file.filecategory.dummy;
 
 import kr.aling.file.filecategory.entity.FileCategory;
 

@@ -1,0 +1,45 @@
+:toc:
+
+==== 파일 단건 조회
+
+파일 정보 단건 조회 API
+
+===== 요청
+
+operation::file-get[snippets='http-request']
+
+===== 응답
+
+operation::file-get[snippets='http-response']
+
+===== 파라미터 설명
+
+====== 요청 Path Variable
+
+operation::file-get[snippets='path-parameters']
+
+====== 응답 Body
+
+operation::file-get[snippets='response-fields']
+
+==== 파일 여러개 조회
+
+N개 파일 정보 조회 API
+
+===== 요청
+
+operation::file-get-by-fileNoList[snippets='http-request']
+
+===== 응답
+
+operation::file-get-by-fileNoList[snippets='http-response']
+
+===== 파라미터 설명
+
+====== 요청 Query Param
+
+operation::file-get-by-fileNoList[snippets='request-parameters']
+
+====== 응답 Body
+
+operation::file-get-by-fileNoList[snippets='response-fields']

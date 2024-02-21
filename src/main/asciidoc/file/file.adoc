@@ -1,4 +1,5 @@
 === 파일(File)
 
+include::file-get.adoc[]
 include::files-create.adoc[]
 include::hook-file-create.adoc[]

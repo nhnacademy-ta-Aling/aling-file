@@ -6,7 +6,7 @@ import static kr.aling.file.common.util.ConstantUtil.X_FILE_SAVE_LOCATION;
 import java.util.List;
 import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
-import kr.aling.file.file.service.FileFacadeService;
+import kr.aling.file.file.service.facade.FileFacadeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
