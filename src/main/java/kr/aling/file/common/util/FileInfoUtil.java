@@ -1,5 +1,6 @@
 package kr.aling.file.common.util;
 
+import java.util.Objects;
 import kr.aling.file.common.dto.FileInfoDto;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,8 +27,9 @@ public class FileInfoUtil {
      */
     public static FileInfoDto generateFileInfo(MultipartFile multipartFile) {
         String originFileName = multipartFile.getOriginalFilename();
+        String extension = Objects.requireNonNull(originFileName).substring(originFileName.lastIndexOf("."));
         String saveFileName = RandomStringUtils.randomAlphanumeric(20) + "-"
-                + RandomStringUtils.randomAlphabetic(20);
+                + RandomStringUtils.randomAlphabetic(20) + extension;
 
         return new FileInfoDto(originFileName, saveFileName);
     }
