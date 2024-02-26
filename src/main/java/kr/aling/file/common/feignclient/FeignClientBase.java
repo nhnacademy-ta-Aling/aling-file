@@ -1,7 +1,7 @@
 package kr.aling.file.common.feignclient;
 
 /**
- * Some description here.
+ * Feign Client 위치 지정을 위한 interface.
  *
  * @author 박경서
  * @since 1.0
