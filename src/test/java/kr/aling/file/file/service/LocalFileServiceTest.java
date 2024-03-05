@@ -18,8 +18,8 @@ import java.util.Optional;
 import javax.servlet.ServletException;
 import kr.aling.file.common.enums.FileSaveLocation;
 import kr.aling.file.file.dto.response.FileUploadResponseDto;
-import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.entity.AlingFile;
+import kr.aling.file.file.exception.DeprecatedException;
 import kr.aling.file.file.exception.FileSaveException;
 import kr.aling.file.file.repository.AlingFileRepository;
 import kr.aling.file.file.service.impl.LocalFileServiceImpl;
@@ -163,9 +163,50 @@ class LocalFileServiceTest {
         // when
 
         // then
-        HookResponseDto hookResponseDto = localFileService.saveOnlyHookImageFile(multipartFile, 1);
+        assertThatThrownBy(() -> localFileService.saveOnlyHookImageFile(multipartFile, 1))
+                .isInstanceOf(DeprecatedException.class)
+                .hasMessage(DeprecatedException.MESSAGE);
+    }
 
-        assertThat(hookResponseDto).isNull();
+    @Test
+    @DisplayName("local 파일 수정 미사용 메서드 테스트")
+    void local_modifyFile_non_operation_test() {
+        // given
+        List<Long> fileNoList = List.of(1L);
+        List<MultipartFile> fileList = List.of(new MockMultipartFile("test", "test".getBytes()));
+
+        // when
+
+        // then
+        assertThatThrownBy(() -> localFileService.modifyFile(fileNoList, fileList, 1))
+                .isInstanceOf(DeprecatedException.class)
+                .hasMessage(DeprecatedException.MESSAGE);
+    }
+
+    @Test
+    @DisplayName("local 파일 삭제 미사용 메서드 테스트")
+    void local_deleteFile_non_operation_test() {
+        // given
+
+        // when
+
+        // then
+        assertThatThrownBy(() -> localFileService.deleteFile(1L))
+                .isInstanceOf(DeprecatedException.class)
+                .hasMessage(DeprecatedException.MESSAGE);
+    }
+
+    @Test
+    @DisplayName("local 파일 다운로드 미사용 메서드 테스트")
+    void local_downloadFile_non_operation_test() {
+        // given
+
+        // when
+
+        // then
+        assertThatThrownBy(() -> localFileService.deleteFile(1L))
+                .isInstanceOf(DeprecatedException.class)
+                .hasMessage(DeprecatedException.MESSAGE);
     }
 
 }

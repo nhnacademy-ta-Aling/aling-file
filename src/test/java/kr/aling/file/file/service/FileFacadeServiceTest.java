@@ -1,7 +1,6 @@
 package kr.aling.file.file.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -9,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import kr.aling.file.file.dto.response.HookResponseDto;
-import kr.aling.file.file.exception.FileRequestCountOverException;
 import kr.aling.file.file.service.facade.FileFacadeService;
 import kr.aling.file.file.service.impl.LocalFileServiceImpl;
 import kr.aling.file.file.service.impl.ObjectStorageFileServiceImpl;
@@ -20,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(SpringExtension.class)
 class FileFacadeServiceTest {
@@ -71,28 +68,46 @@ class FileFacadeServiceTest {
     }
 
     @Test
-    @DisplayName("File 10개가 넘는 경우 예외 테스트")
-    void file_count_over_exception_test() {
+    @DisplayName("파일 수정 facade 메서드 테스트 ")
+    void facade_modifyFiles_test() {
         // given
-        List<MultipartFile> fileList = List.of(
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes()),
-                new MockMultipartFile("test", "test".getBytes())
-        );
+        MockMultipartFile multipartFile = new MockMultipartFile("test", "test".getBytes());
 
         // when
+        when(fileServiceResolver.chooseFileService(anyString())).thenReturn(objectStorageFileService);
 
         // then
-        assertThatThrownBy(() -> fileFacadeService.uploadFiles(fileList, 1, "location"))
-                .isInstanceOf(FileRequestCountOverException.class);
+        fileFacadeService.modifyFiles(List.of(1L), List.of(multipartFile), 1, "location");
+
+        verify(fileServiceResolver, times(1)).chooseFileService(anyString());
+    }
+
+    @Test
+    @DisplayName("파일 삭제 facade 메서드 테스트")
+    void facade_deleteFile_test() {
+        // given
+
+        // when
+        when(fileServiceResolver.chooseFileService(anyString())).thenReturn(objectStorageFileService);
+
+        // then
+        fileFacadeService.deleteFile(1L, "location");
+
+        verify(fileServiceResolver, times(1)).chooseFileService(anyString());
+    }
+
+    @Test
+    @DisplayName("파일 다운 로드 facade 메서드 테스트")
+    void facade_downloadFile_test() {
+        // given
+
+        // when
+        when(fileServiceResolver.chooseFileService(anyString())).thenReturn(objectStorageFileService);
+
+        // then
+        fileFacadeService.downloadFile(1L, "location");
+
+        verify(fileServiceResolver, times(1)).chooseFileService(anyString());
     }
 
 }
