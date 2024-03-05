@@ -1,0 +1,12 @@
+// request-headers.snippet
+
+|===
+|Name|Description|필수
+
+{{#headers}}
+|{{#tableCellContent}}`+{{name}}+`{{/tableCellContent}}
+|{{#tableCellContent}}{{description}}{{/tableCellContent}}
+|{{#tableCellContent}}{{required}}{{/tableCellContent}}
+
+{{/headers}}
+|===
