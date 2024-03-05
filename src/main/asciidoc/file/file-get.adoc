@@ -43,3 +43,26 @@ operation::file-get-by-fileNoList[snippets='request-parameters']
 ====== 응답 Body
 
 operation::file-get-by-fileNoList[snippets='response-fields']
+
+==== 파일 다운 로드
+
+파일 다운 로드 API
+
+===== 요청
+
+operation::file-download[snippets='http-request']
+
+===== 응답
+
+operation::file-download[snippets='http-response']
+
+===== 파라미터 설명
+
+====== 요청 헤더
+
+operation::file-download[snippets='request-headers']
+
+====== 요청 Path Variable
+
+operation::file-download[snippets='path-parameters']
+

@@ -1,0 +1,27 @@
+:toc:
+
+==== 파일 수정
+
+파일 수정 API
+
+===== 요청
+
+operation::files-modify[snippets='http-request']
+
+===== 응답
+
+operation::files-modify[snippets='http-response']
+
+===== 파라미터 설명
+
+====== 요청 헤더
+
+operation::files-modify[snippets='request-headers']
+
+====== 요청 Query Param
+
+operation::files-modify[snippets='request-parameters']
+
+====== 응답 Body
+
+operation::files-modify[snippets='response-fields']

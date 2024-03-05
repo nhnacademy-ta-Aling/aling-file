@@ -1,0 +1,23 @@
+:toc:
+
+==== 파일 삭제
+
+파일 삭제 API
+
+===== 요청
+
+operation::file-delete[snippets='http-request']
+
+===== 응답
+
+operation::file-delete[snippets='http-response']
+
+===== 파라미터 설명
+
+====== 요청 헤더
+
+operation::file-delete[snippets='request-headers']
+
+====== 요청 Path Variable
+
+operation::file-delete[snippets='path-parameters']
