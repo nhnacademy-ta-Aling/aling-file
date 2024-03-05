@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import kr.aling.file.common.dto.FileInfoDto;
 import kr.aling.file.common.util.FileInfoUtil;
+import kr.aling.file.file.dto.response.FileDownResponseDto;
 import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.entity.AlingFile;
+import kr.aling.file.file.exception.DeprecatedException;
 import kr.aling.file.file.exception.FileSaveException;
 import kr.aling.file.file.repository.AlingFileRepository;
 import kr.aling.file.file.service.FileService;
@@ -55,8 +57,8 @@ public class LocalFileServiceImpl implements FileService {
     /**
      * {@inheritDoc}
      *
-     * @param files             MultipartFile 파일들
-     * @param fileCategoryNo    파일 Category 번호
+     * @param files          MultipartFile 파일들
+     * @param fileCategoryNo 파일 Category 번호
      * @return 파일 번호 List
      */
     @Override
@@ -100,12 +102,46 @@ public class LocalFileServiceImpl implements FileService {
     /**
      * 사용 하지 않는 메서드. (Local 파일 저장)
      *
-     * @param multipartFile     MultipartFile
-     * @param fileCategoryNo    파일 Category 번호
+     * @param multipartFile  MultipartFile
+     * @param fileCategoryNo 파일 Category 번호
      * @return null
      */
     @Override
     public HookResponseDto saveOnlyHookImageFile(MultipartFile multipartFile, Integer fileCategoryNo) {
-        return null;
+        throw new DeprecatedException();
+    }
+
+    /**
+     * 사용 하지 않는 메서드.
+     *
+     * @param fileNoList     파일 번호 리스트
+     * @param fileList       파일 리스트
+     * @param fileCategoryNo 파일 카테고리 번호
+     * @return
+     */
+    @Override
+    public List<FileUploadResponseDto> modifyFile(List<Long> fileNoList, List<MultipartFile> fileList,
+                                                  Integer fileCategoryNo) {
+        throw new DeprecatedException();
+    }
+
+    /**
+     * 사용 하지 않는 메서드.
+     *
+     * @param fileNo 파일 번호
+     */
+    @Override
+    public void deleteFile(Long fileNo) {
+        throw new DeprecatedException();
+    }
+
+    /**
+     * 사용 하지 않는 메서드.
+     *
+     * @param fileNo 파일 번호
+     */
+    @Override
+    public FileDownResponseDto downloadFile(Long fileNo) {
+        throw new DeprecatedException();
     }
 }

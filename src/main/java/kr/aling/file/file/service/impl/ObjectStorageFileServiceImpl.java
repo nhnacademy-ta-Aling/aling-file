@@ -1,7 +1,6 @@
 package kr.aling.file.file.service.impl;
 
 import static kr.aling.file.common.enums.FileSaveLocation.OBJECT_STORAGE;
-import static kr.aling.file.common.util.ConstantUtil.X_AUTH_TOKEN;
 import static kr.aling.file.common.util.FileSizeUtil.calculateFileSize;
 
 import java.io.IOException;
@@ -14,10 +13,12 @@ import kr.aling.file.common.dto.FileInfoDto;
 import kr.aling.file.common.properties.ObjectStorageProperties;
 import kr.aling.file.common.util.FileInfoUtil;
 import kr.aling.file.file.dto.request.StorageTokenRequestDto;
+import kr.aling.file.file.dto.response.FileDownResponseDto;
 import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.dto.response.StorageTokenResponseDto;
 import kr.aling.file.file.entity.AlingFile;
+import kr.aling.file.file.exception.AlingFileNotFoundException;
 import kr.aling.file.file.exception.FileSaveException;
 import kr.aling.file.file.repository.AlingFileRepository;
 import kr.aling.file.file.service.FileService;
@@ -26,10 +27,12 @@ import kr.aling.file.filecategory.exception.FileCategoryNotFoundException;
 import kr.aling.file.filecategory.repository.FileCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpMessageConverterExtractor;
@@ -57,6 +60,7 @@ public class ObjectStorageFileServiceImpl implements FileService {
     private String tokenId;
     private LocalDateTime tokenExpires;
     private static final String DIRECTORY = "/";
+    private static final String X_AUTH_TOKEN = "X-Auth-Token";
 
     /**
      * {@inheritDoc}
@@ -107,8 +111,7 @@ public class ObjectStorageFileServiceImpl implements FileService {
                 }
             };
 
-            HttpMessageConverterExtractor<String> responseExtractor
-                    = new HttpMessageConverterExtractor<>(String.class, restTemplate.getMessageConverters());
+            HttpMessageConverterExtractor<String> responseExtractor = getMessageConverterExtractor();
 
             restTemplate.execute(pathUrl, HttpMethod.PUT, requestCallback, responseExtractor);
 
@@ -161,14 +164,109 @@ public class ObjectStorageFileServiceImpl implements FileService {
             }
         };
 
-        HttpMessageConverterExtractor<String> responseExtractor
-                = new HttpMessageConverterExtractor<>(String.class, restTemplate.getMessageConverters());
+        HttpMessageConverterExtractor<String> responseExtractor =
+                getMessageConverterExtractor();
 
         restTemplate.execute(pathUrl, HttpMethod.PUT, requestCallback, responseExtractor);
+
+        AlingFile alingFile = AlingFile.builder()
+                .fileCategory(fileCategory)
+                .path(pathUrl)
+                .originName(fileInfoDto.getOriginFileName())
+                .saveName(fileInfoDto.getSaveFileName())
+                .size(calculateFileSize(multipartFile.getSize()))
+                .createAt(LocalDateTime.now())
+                .build();
+
+        fileRepository.save(alingFile);
 
         return new HookResponseDto(pathUrl);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param fileNoList     수정 할 파일 번호 리스트
+     * @param fileList       새로운 파일 리스트
+     * @param fileCategoryNo 파일 Category 번호
+     * @return 파일 번호 리스트
+     */
+    @Override
+    public List<FileUploadResponseDto> modifyFile(List<Long> fileNoList, List<MultipartFile> fileList,
+                                                  Integer fileCategoryNo) {
+        if (hasToIssuedToken()) {
+            requestStorageToken();
+        }
+
+        fileNoList.forEach(this::deleteFile);
+        return saveFile(fileList, fileCategoryNo);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param fileNo 파일 번호
+     */
+    @Override
+    public void deleteFile(Long fileNo) {
+        AlingFile alingFile = fileRepository.findById(fileNo)
+                .orElseThrow(AlingFileNotFoundException::new);
+
+        if (hasToIssuedToken()) {
+            requestStorageToken();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_AUTH_TOKEN, tokenId);
+
+        restTemplate.exchange(
+                alingFile.getPath(),
+                HttpMethod.DELETE,
+                new HttpEntity<>(headers),
+                Void.class
+        );
+
+        fileRepository.delete(alingFile);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param fileNo 파일 번호
+     * @return 파일 다운 응답 Dto
+     */
+    @Override
+    public FileDownResponseDto downloadFile(Long fileNo) {
+        AlingFile alingFile = fileRepository.findById(fileNo)
+                .orElseThrow(AlingFileNotFoundException::new);
+
+        if (hasToIssuedToken()) {
+            requestStorageToken();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(X_AUTH_TOKEN, tokenId);
+        headers.setAccept(List.of(MediaType.APPLICATION_OCTET_STREAM));
+
+        ResponseEntity<byte[]> response = restTemplate.exchange(
+                alingFile.getPath(),
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                byte[].class
+        );
+
+        return new FileDownResponseDto(alingFile.getOriginName(),
+                new ByteArrayResource(Objects.requireNonNull(response.getBody())));
+    }
+
+    /**
+     * MessageConverter 추출 메서드.
+     *
+     * @return HttpMessageConverterExtractor
+     */
+    private HttpMessageConverterExtractor<String> getMessageConverterExtractor() {
+        return new HttpMessageConverterExtractor<>(String.class, restTemplate.getMessageConverters());
+    }
 
     /**
      * 토큰을 요청해 발급 받는 메서드.
