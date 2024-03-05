@@ -12,8 +12,6 @@ public class ConstantUtil {
     public static final String X_FILE_CATEGORY = "X-File-Category";
     public static final String X_AUTH_TOKEN = "X-Auth-Token";
 
-    public static final Integer FILES_REQUEST_LIMIT_COUNT = 10;
-
     /**
      * Util 기본 생성자.
      */

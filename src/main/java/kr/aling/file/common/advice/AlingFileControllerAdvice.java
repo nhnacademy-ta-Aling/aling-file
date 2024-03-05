@@ -1,5 +1,6 @@
 package kr.aling.file.common.advice;
 
+import kr.aling.file.file.exception.DeprecatedException;
 import kr.aling.file.file.exception.FileSaveException;
 import kr.aling.file.file.exception.FileSaveLocationException;
 import kr.aling.file.filecategory.exception.FileCategoryNotFoundException;
@@ -22,7 +23,7 @@ public class AlingFileControllerAdvice {
      *
      * @return Http Status 400
      */
-    @ExceptionHandler({FileCategoryNotFoundException.class, FileSaveLocationException.class})
+    @ExceptionHandler({FileCategoryNotFoundException.class, FileSaveLocationException.class, DeprecatedException.class})
     public ResponseEntity<Void> badRequestException() {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

@@ -3,9 +3,14 @@ package kr.aling.file.file.controller;
 import static kr.aling.file.common.enums.FileSaveLocation.OBJECT_STORAGE;
 import static kr.aling.file.common.util.ConstantUtil.X_FILE_CATEGORY;
 import static kr.aling.file.common.util.ConstantUtil.X_FILE_SAVE_LOCATION;
+import static kr.aling.file.util.RestDocsUtil.REQUIRED;
+import static kr.aling.file.util.RestDocsUtil.REQUIRED_YES;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,8 +22,12 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.partWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
+import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import kr.aling.file.file.dto.response.FileDownResponseDto;
 import kr.aling.file.file.dto.response.FileUploadResponseDto;
 import kr.aling.file.file.dto.response.HookResponseDto;
 import kr.aling.file.file.service.facade.FileFacadeService;
@@ -36,13 +46,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
-@WebMvcTest(FileController.class)
+@WebMvcTest(FileManageController.class)
 @AutoConfigureRestDocs(uriScheme = "http", uriHost = "localhost", uriPort = 9080)
-class FileControllerTest {
+class FileManageControllerTest {
 
     @Autowired
     MockMvc mvc;
@@ -93,8 +106,10 @@ class FileControllerTest {
                         preprocessResponse(prettyPrint()),
 
                         requestHeaders(
-                                headerWithName(X_FILE_SAVE_LOCATION).description("파일 저장 위치"),
+                                headerWithName(X_FILE_SAVE_LOCATION).description("파일 저장 위치")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES)),
                                 headerWithName(X_FILE_CATEGORY).description("파일 Category 번호")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES))
                         ),
 
                         requestParts(
@@ -185,8 +200,10 @@ class FileControllerTest {
                         preprocessResponse(prettyPrint()),
 
                         requestHeaders(
-                                headerWithName(X_FILE_SAVE_LOCATION).description("파일 저장 위치"),
+                                headerWithName(X_FILE_SAVE_LOCATION).description("파일 저장 위치")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES)),
                                 headerWithName(X_FILE_CATEGORY).description("파일 Category 번호")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES))
                         ),
 
                         requestParts(
@@ -252,6 +269,109 @@ class FileControllerTest {
                 .andExpect(status().is4xxClientError());
 
         verify(fileFacadeService, times(0)).uploadHookImage(any(MockMultipartFile.class), anyInt(), anyString());
+    }
+
+    @Test
+    @DisplayName("파일 수정 API 성공 테스트")
+    void modifyFiles_api_test() throws Exception {
+        // given
+        List<FileUploadResponseDto> result = List.of(new FileUploadResponseDto(2L));
+
+        // when
+        when(fileFacadeService.modifyFiles(anyList(), anyList(), anyInt(), anyString()))
+                .thenReturn(result);
+
+        // then
+        mvc.perform(multipart(URL + "/files")
+                        .file(multipartFileImage)
+                        .param("no", "1")
+                        .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE)
+                        .header(X_FILE_CATEGORY, 4)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isCreated())
+                .andDo(print())
+                .andDo(document("files-modify",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestHeaders(
+                                headerWithName(X_FILE_SAVE_LOCATION).description("파일 저장 위치")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES)),
+                                headerWithName(X_FILE_CATEGORY).description("파일 Category 번호")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES))
+                        ),
+
+                        requestParameters(
+                                parameterWithName("no").description("파일 번호")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES))
+                        ),
+
+                        responseFields(
+                                fieldWithPath("[].fileNo").description("파일 번호")
+                        )
+                ));
+
+        verify(fileFacadeService, times(1)).modifyFiles(anyList(), anyList(), anyInt(), anyString());
+    }
+
+    @Test
+    @DisplayName("파일 삭제 API 성공 테스트")
+    void deleteFile_api_success_test() throws Exception {
+        // given
+
+        // when
+        doNothing().when(fileFacadeService).deleteFile(anyLong(), anyString());
+
+        // then
+        mvc.perform(RestDocumentationRequestBuilders.delete(URL + "/files/{fileNo}", 1L)
+                        .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE))
+                .andExpect(status().isNoContent())
+                .andDo(print())
+                .andDo(document("file-delete",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestHeaders(
+                                headerWithName(X_FILE_SAVE_LOCATION).description("파일 저장 위치")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES))
+                        ),
+
+                        pathParameters(
+                                parameterWithName("fileNo").description("파일 번호")
+                        )
+                ));
+
+        verify(fileFacadeService, times(1)).deleteFile(anyLong(), anyString());
+    }
+
+    @Test
+    @DisplayName("파일 다운 API 성공 테스트")
+    void downloadFile_api_success_test() throws Exception {
+        // given
+        FileDownResponseDto fileDownResponseDto =
+                new FileDownResponseDto("origin file name", new ByteArrayResource("file".getBytes()));
+
+        // when
+        when(fileFacadeService.downloadFile(anyLong(), anyString())).thenReturn(fileDownResponseDto);
+
+        // then
+        mvc.perform(RestDocumentationRequestBuilders.get(URL + "/files/{fileNo}/download", 1L)
+                        .header(X_FILE_SAVE_LOCATION, OBJECT_STORAGE))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andDo(document("file-download",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        requestHeaders(
+                                headerWithName(X_FILE_SAVE_LOCATION).description("파일 저장 위치")
+                                        .attributes(key(REQUIRED).value(REQUIRED_YES))
+                        ),
+
+                        pathParameters(
+                                parameterWithName("fileNo").description("파일 번호")
+                        )
+                ));
     }
 
 }

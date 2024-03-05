@@ -2,6 +2,8 @@
 
 ==== 여러 파일 등록
 
+N개 파일 등록 API
+
 ===== 요청
 
 operation::files-upload[snippets='http-request']
@@ -17,3 +19,27 @@ operation::files-upload[snippets='request-parts']
 ===== 응답
 
 operation::files-upload[snippets='http-response']
+
+==== tui hook 이미지 파일 등록
+
+파일 1개 등록 API
+
+===== 요청
+
+operation::hook-file-upload[snippets='http-request']
+
+===== 요청 헤더
+
+operation::hook-file-upload[snippets='request-headers']
+
+===== 요청 바디(파트)
+
+operation::hook-file-upload[snippets='request-parts']
+
+===== 응답
+
+operation::hook-file-upload[snippets='http-response']
+
+===== 응답 필드
+
+operation::hook-file-upload[snippets='response-fields']
