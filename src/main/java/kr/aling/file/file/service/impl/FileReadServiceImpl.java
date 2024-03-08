@@ -1,8 +1,12 @@
 package kr.aling.file.file.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import kr.aling.file.common.annotation.ReadService;
+import kr.aling.file.file.dto.request.ReadPostFileRequestDto;
 import kr.aling.file.file.dto.response.GetFileResponseDto;
+import kr.aling.file.file.dto.response.ReadPostFileResponseDto;
 import kr.aling.file.file.exception.AlingFileNotFoundException;
 import kr.aling.file.file.repository.AlingFileReadRepository;
 import kr.aling.file.file.service.FileReadService;
@@ -44,5 +48,28 @@ public class FileReadServiceImpl implements FileReadService {
         }
 
         return alingReadRepository.getFileInfoByFileNo(fileNo);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ReadPostFileResponseDto> getPostsFiles(List<ReadPostFileRequestDto> requests) {
+        List<ReadPostFileResponseDto> responseDtos = new ArrayList<>();
+
+        requests.forEach(
+                request -> {
+                    List<Long> fileNoList = request.getFileNoList();
+
+                    responseDtos.add(
+                            new ReadPostFileResponseDto(
+                                    request.getPostNo(),
+                                    Objects.nonNull(fileNoList) ?
+                                            alingReadRepository.getFilesInfoByFileNoList(request.getFileNoList()) :
+                                            new ArrayList<>()));
+                }
+        );
+
+        return responseDtos;
     }
 }
