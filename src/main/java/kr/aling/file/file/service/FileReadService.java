@@ -1,7 +1,9 @@
 package kr.aling.file.file.service;
 
 import java.util.List;
+import kr.aling.file.file.dto.request.ReadPostFileRequestDto;
 import kr.aling.file.file.dto.response.GetFileResponseDto;
+import kr.aling.file.file.dto.response.ReadPostFileResponseDto;
 
 /**
  * 파일 Read Service interface.
@@ -26,4 +28,14 @@ public interface FileReadService {
      * @return 파일 정보
      */
     GetFileResponseDto getFileInfo(Long fileNo);
+
+    /**
+     * 여러개의 게시물에 대한 파일 경로 조회
+     *
+     * @param requests 게시물 번호와 대응되는 파일 번호가 포함된 요청 객체
+     * @return 게시물 번호와 대응되는 파일 경로가 포함된 응답 객체
+     * @author : 이성준
+     * @since : 1.0
+     */
+    List<ReadPostFileResponseDto> getPostsFiles(List<ReadPostFileRequestDto> requests);
 }

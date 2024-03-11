@@ -1,13 +1,17 @@
 package kr.aling.file.file.controller;
 
 import java.util.List;
+import kr.aling.file.file.dto.request.ReadPostFileRequestDto;
 import kr.aling.file.file.dto.response.GetFileResponseDto;
+import kr.aling.file.file.dto.response.ReadPostFileResponseDto;
 import kr.aling.file.file.service.FileReadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,5 +54,20 @@ public class FileReadController {
                 .status(HttpStatus.OK)
                 .body(fileReadService.getFileInfo(fileNo));
     }
+
+    /**
+     * 게시물에 첨부된 이미지 경로를 반환해주는 API 입니다.
+     *
+     * @param requests 게시물 번호와 대응되는 파일 번호가 포함된 요청 객체
+     * @return 게시물 번호와 대응되는 파일 경로가 포함된 응답 객체
+     * @author : 이성준
+     * @since : 1.0
+     */
+    @PostMapping("/posts")
+    public ResponseEntity<List<ReadPostFileResponseDto>> getPostFiles(@RequestBody List<ReadPostFileRequestDto> requests){
+        return ResponseEntity
+                .ok(fileReadService.getPostsFiles(requests));
+    }
+
 
 }
