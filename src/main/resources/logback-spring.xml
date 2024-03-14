@@ -16,6 +16,13 @@
         <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="trace" additivity="false">
             <appender-ref ref="console"/>
         </logger>
+
+        <logger name="org.apache.http" level="OFF">
+            <appender-ref ref="console"/>
+        </logger>
+        <logger name="com.netflix.discovery" level="OFF">
+            <appender-ref ref="console"/>
+        </logger>
     </springProfile>
 
     <springProfile name="prod">
