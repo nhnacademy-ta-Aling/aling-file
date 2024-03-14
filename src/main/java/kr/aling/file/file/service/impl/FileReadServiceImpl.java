@@ -11,6 +11,7 @@ import kr.aling.file.file.exception.AlingFileNotFoundException;
 import kr.aling.file.file.repository.AlingFileReadRepository;
 import kr.aling.file.file.service.FileReadService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.ObjectUtils;
 
 /**
  * File Read Service 구현채.
@@ -64,7 +65,7 @@ public class FileReadServiceImpl implements FileReadService {
                     responseDtos.add(
                             new ReadPostFileResponseDto(
                                     request.getPostNo(),
-                                    Objects.nonNull(fileNoList) ?
+                                    ObjectUtils.isEmpty(fileNoList) ?
                                             alingReadRepository.getFilesInfoByFileNoList(request.getFileNoList()) :
                                             new ArrayList<>()));
                 }
