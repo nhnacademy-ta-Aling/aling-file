@@ -2,7 +2,6 @@ package kr.aling.file.file.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import kr.aling.file.common.annotation.ReadService;
 import kr.aling.file.file.dto.request.ReadPostFileRequestDto;
 import kr.aling.file.file.dto.response.GetFileResponseDto;
@@ -65,7 +64,7 @@ public class FileReadServiceImpl implements FileReadService {
                     responseDtos.add(
                             new ReadPostFileResponseDto(
                                     request.getPostNo(),
-                                    ObjectUtils.isEmpty(fileNoList) ?
+                                    !ObjectUtils.isEmpty(fileNoList) ?
                                             alingReadRepository.getFilesInfoByFileNoList(request.getFileNoList()) :
                                             new ArrayList<>()));
                 }
